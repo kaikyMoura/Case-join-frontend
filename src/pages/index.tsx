@@ -55,33 +55,21 @@ const Home = () => {
     setIsLoading(true)
     const response = await findProducts((filters ? filters : {} as ProductFilterDto))
     if (response.success === true) {
-      console.log(response.data)
       setIsLoading(false)
       setProducts(response.data!);
     }
   };
 
-  /**
-   * Handles the creation of a new product by calling `createProduct` and
-   * displaying an alert with either a success or error message.
-   *
-   * Before calling `createProduct`, this function checks that all required
-   * fields are filled and sets the `category` field if `selected` is set to a
-   * valid `Category` value.
-   *
-   * If the response from `createProduct` is successful, the alert is displayed
-   * with a "sucess" type and the message from the response. Otherwise, the alert
-   * is displayed with an "error" type and the error message from the response.
-   *
-   * In either case, the modal is closed and the alert is displayed.
-   */
   const addProduct = async () => {
     if (Object.values(Category).includes(selected as Category)) {
       setCategory(selected as Category);
     }
 
     if (!name || !description || !category || !brand || !price || !quantity) {
-      console.error("All product fields must be filled.");
+      setType("error")
+      setTitle("Error")
+      setText("All product fields must be filled.")
+      setShowAlert(true)
       return;
     }
 
@@ -119,7 +107,10 @@ const Home = () => {
     }
 
     if (!name || !description || !category || !brand || !price || !quantity) {
-      console.error("All product fields must be filled.");
+      setType("error")
+      setTitle("Error")
+      setText("All product fields must be filled.")
+      setShowAlert(true)
       return;
     }
 
@@ -132,8 +123,6 @@ const Home = () => {
       price: parseFloat(price.toString()),
       quantity: quantity!
     }
-
-    console.log(product)
 
     const response = await updateProduct(product)
     if (response.success === true) {
@@ -153,7 +142,6 @@ const Home = () => {
   }
 
   const deleteProduct = async (id: string) => {
-    console.log(id)
 
     const response = await deleteProductById(id)
     if (response.success === true) {
@@ -184,7 +172,6 @@ const Home = () => {
 
   const handleFilterChange = (selectedFilters: ProductFilterDto) => {
     setFilters(selectedFilters);
-    console.log("Filtros aplicados:", selectedFilters);
     fetchProducts();
   };
 
@@ -195,10 +182,8 @@ const Home = () => {
 
   const handleOpenUpdateModal = async (id: string) => {
     setUpdating(true)
-    console.log(id)
     const response = await findProductById(id)
     if (response.success === true) {
-      console.log(response.data)
       setId(response.data?.id)
       setName(response.data!.name)
       setDescription(response.data!.description)
