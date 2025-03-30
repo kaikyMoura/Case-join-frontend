@@ -1,7 +1,6 @@
 import { MouseEventHandler, useEffect } from "react";
-import styles from "./styles.module.css";
-import { FaX } from "react-icons/fa6";
 import { IoIosWarning } from "react-icons/io";
+import styles from "./styles.module.css";
 
 const Alert = ({ Close, title, type, text, action }: {
     type: "error" | "sucess" | "notification" | "warning",
@@ -31,7 +30,7 @@ const Alert = ({ Close, title, type, text, action }: {
 
     return (
         <>
-            <div className={`${styles.modalBlur}`} style={{ borderColor: color }} onClick={(e) => e.stopPropagation()}>
+            <div className={`${styles.modalBlur}`} style={{ borderColor: "" }} onClick={(e) => e.stopPropagation()}>
                 <div className="flex flex-col gap-4">
                     <div className="flex itemspcenter gap-2">
                         <h2 className="text-xl font-semibold">{title}</h2>
@@ -43,7 +42,7 @@ const Alert = ({ Close, title, type, text, action }: {
                     </div>
                     <div className="flex justify-between">
                         {type === "warning" && <button onClick={Close} style={{ backgroundColor: "#808080", color: "white" }}>Cancel</button>}
-                        <button onClick={action} style={{ backgroundColor: "black", color: "white" }}>{type === "warning" ? "Confirm" : "Ok"}</button>
+                        <button onClick={Close} style={{ backgroundColor: "black", color: "white" }}>{type === "warning" ? "Confirm" : "Ok"}</button>
                     </div>
                 </div>
             </div>
