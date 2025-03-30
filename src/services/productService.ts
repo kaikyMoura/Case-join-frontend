@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios"
 import api from "./api"
 import { Product } from "@/types/Product"
+import { ProductFilterDto } from "@/types/ProductFilterDto"
 
 type ApiResponse<T> = {
     success?: boolean
@@ -57,20 +58,69 @@ const deleteProductById = async (id: string): Promise<ApiResponse<String>> => {
     }
 }
 
-const findProducts = async (name?: string, category?: string, brand?: string, minPrice?: number, maxPrice?: number, page?: number, pageSize?: number): Promise<ApiResponse<Product[]>> => {
+const updateProduct = async (product: Product): Promise<ApiResponse<String>> => {
+    try {
+        const response = await api.put("/product", product)
 
-    const categoryUpperCase = category ? category.toUpperCase() : undefined
+        return {
+            success: true,
+            message: response.data.message,
+        }
+    } catch (err) {
+        if (axios.isAxiosError(err)) {
+            const axiosError = err as AxiosError<ApiResponse<String>>;
+            if (axiosError.response) {
+                return {
+                    success: false,
+                    error: axiosError.response.data.message
+                };
+            }
+        }
+    }
+    return {
+        error: "Internal server error"
+    }
+}
+
+const findProductById = async (id: string): Promise<ApiResponse<Product>> => {
+    try {
+        const response = await api.get(`/product/${id}`)
+
+        return {
+            success: true,
+            message: response.data.message,
+            data: response.data.data
+        }
+    } catch (err) {
+        if (axios.isAxiosError(err)) {
+            const axiosError = err as AxiosError<ApiResponse<String>>;
+            if (axiosError.response) {
+                return {
+                    success: false,
+                    error: axiosError.response.data.message
+                };
+            }
+        }
+    }
+    return {
+        error: "Internal server error"
+    }
+}
+
+const findProducts = async (filter: ProductFilterDto): Promise<ApiResponse<Product[]>> => {
+
+    const categoryUpperCase = filter.category ? filter.category.toUpperCase() : undefined
+    const params = {
+        name: filter.name,
+        brand: filter.brand,
+        category: categoryUpperCase,
+        minPrice: filter.minPrice,
+        maxPrice: filter.maxPrice
+    };
+
     try {
         const response = await api.get('/product', {
-            params: {
-                name,
-                categoryUpperCase,
-                brand,
-                minPrice,
-                maxPrice,
-                page,
-                pageSize
-            }
+            params
         })
 
         return {
@@ -95,7 +145,9 @@ const findProducts = async (name?: string, category?: string, brand?: string, mi
 }
 
 export {
-    createProduct,
     findProducts,
-    deleteProductById
+    findProductById,
+    createProduct,
+    updateProduct,
+    deleteProductById,
 }

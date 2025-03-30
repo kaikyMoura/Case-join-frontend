@@ -40,9 +40,9 @@ const Alert = ({ Close, title, type, text, action }: {
                     <div className="flex items-center justify-center">
                         <p className="font-normal text-lg">{text}</p>
                     </div>
-                    <div className="flex justify-between">
+                    <div className={`flex ${type === "warning" ? "justify-between" : "justify-end"}`}>
                         {type === "warning" && <button onClick={Close} style={{ backgroundColor: "#808080", color: "white" }}>Cancel</button>}
-                        <button onClick={Close} style={{ backgroundColor: "black", color: "white" }}>{type === "warning" ? "Confirm" : "Ok"}</button>
+                        <button className="px-2 w-20" onClick={Close} style={{ backgroundColor: "black", color: "white" }}>{type === "warning" ? "Confirm" : "Ok"}</button>
                     </div>
                 </div>
             </div>

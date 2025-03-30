@@ -1,18 +1,5 @@
 .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    max-width: 100vw;
-    /* color: #000; */
-}
-
-.card {
-    padding: 6px;
-    background-color: #fff;
-    max-width: 400px;
-    max-height: 360px;
-    border-radius: 6px;
+    z-index: 120px;
 }
 
 .filterIcon {
@@ -39,12 +26,6 @@
     box-shadow: 0px 1px 2px 0px #808080;
     font-size: small;
     z-index: 100;
-}
-
-.modalInput:focus {
-    outline: none;
-    color: rgb(0, 0, 0);
-    opacity: 1;
 }
 
 .arrow {

@@ -1,29 +1,37 @@
 import Alert from "@/components/Alert";
 import Card from "@/components/Card";
+import FilterModal from "@/components/FilterModal";
 import Modal from "@/components/Modal";
 import SearchBar from "@/components/SearchBar";
-import { createProduct, deleteProductById, findProducts } from "@/services/productService";
+import { createProduct, deleteProductById, findProductById, findProducts, updateProduct } from "@/services/productService";
 import { Category } from "@/types/CategoryEnum";
 import { Product } from "@/types/Product";
+import { ProductFilterDto } from "@/types/ProductFilterDto";
 import debounce from "lodash.debounce";
 import { SetStateAction, useEffect, useState } from "react";
 import { IoIosArrowForward, IoMdMore } from "react-icons/io";
-import { IoFilter } from "react-icons/io5";
+import { IoReload } from "react-icons/io5";
 import styles from './styles.module.css';
 
 
 const Home = () => {
 
+  const [id, setId] = useState<string>();
   const [products, setProducts] = useState<Product[]>([]);
 
   // 'open' action fields
+  const [openFilterOptions, setOpenFilterOptions] = useState(false);
   const [openOptions, setOpenOptions] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+
+  const [updating, setUpdating] = useState(false)
   const [selected, setSelected] = useState<string | null>(null);
 
-  const [ isUpdated, setIsUpdated ] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [filters, setFilters] = useState<ProductFilterDto>();
 
   // Alert fields
   const [title, setTitle] = useState('')
@@ -44,13 +52,12 @@ const Home = () => {
 
 
   const fetchProducts = async () => {
-    try {
-      const response = await findProducts()
-      if (response.success === true) {
-        setProducts(response.data!);
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
+    setIsLoading(true)
+    const response = await findProducts((filters ? filters : {} as ProductFilterDto))
+    if (response.success === true) {
+      console.log(response.data)
+      setIsLoading(false)
+      setProducts(response.data!);
     }
   };
 
@@ -106,6 +113,45 @@ const Home = () => {
     }
   }
 
+  const editProduct = async () => {
+    if (Object.values(Category).includes(selected as Category)) {
+      setCategory(selected as Category);
+    }
+
+    if (!name || !description || !category || !brand || !price || !quantity) {
+      console.error("All product fields must be filled.");
+      return;
+    }
+
+    const product: Product = {
+      id: id,
+      name: name,
+      description: description,
+      brand: brand,
+      category: category!,
+      price: parseFloat(price.toString()),
+      quantity: quantity!
+    }
+
+    console.log(product)
+
+    const response = await updateProduct(product)
+    if (response.success === true) {
+      setType("sucess")
+      setTitle("Sucess")
+      setText(response.message!)
+      setOpenModal(false)
+      setShowAlert(true)
+      fetchProducts()
+    }
+    else {
+      setType("error")
+      setTitle("Error")
+      setText(response.error!)
+      setShowAlert(true)
+    }
+  }
+
   const deleteProduct = async (id: string) => {
     console.log(id)
 
@@ -127,7 +173,6 @@ const Home = () => {
   }
 
   useEffect(() => {
-
     fetchProducts();
   }, [])
 
@@ -137,14 +182,46 @@ const Home = () => {
     }
   }, [products, handleSearch]);
 
+  const handleFilterChange = (selectedFilters: ProductFilterDto) => {
+    setFilters(selectedFilters);
+    console.log("Filtros aplicados:", selectedFilters);
+    fetchProducts();
+  };
+
+  const handleOpenCreateModal = () => {
+    setUpdating(false)
+    setOpenModal(true)
+  }
+
+  const handleOpenUpdateModal = async (id: string) => {
+    setUpdating(true)
+    console.log(id)
+    const response = await findProductById(id)
+    if (response.success === true) {
+      console.log(response.data)
+      setId(response.data?.id)
+      setName(response.data!.name)
+      setDescription(response.data!.description)
+      setSelected(response.data!.category)
+      setCategory(response.data!.category)
+      setBrand(response.data!.brand)
+      setPrice(response.data!.price.toString())
+      setQuantity(response.data!.quantity)
+    }
+    setOpenModal(true)
+  }
+
   return (
     <div className={`gap-8 ${styles.container}`}>
 
       <div className="flex items-center mt-20">
-        <button className="cursor-pointer mr-6 bg-black hover:bg-[#808080] text-white w-40 h-10 px-4 rounded-md"
-          type="button" onClick={() => setOpenModal(true)}>Add product</button>
+        <button className="cursor-pointer mr-6 bg-black hover:bg-[#808080] text-white w-48 h-10 px-4 rounded-md"
+          type="button" onClick={handleOpenCreateModal}>Add product</button>
         <SearchBar onSearch={handleSearch} keys={["name"]} data={products} />
-        <IoFilter className={`cursor-pointer -ml-6 z-100 ${styles.filterIcon}`} fontSize={26} />
+        <div className="">
+          <FilterModal
+            onFilterChange={handleFilterChange} />
+        </div>
       </div>
 
       <ul className="flex flex-wrap justify-center gap-6">
@@ -163,27 +240,21 @@ const Home = () => {
 
                   {openOptions === product.id && (
                     <div
-                      className="absolute left-0 top-full mt-2 w-32 bg-white border rounded-md shadow-lg"
+                      className="absolute left-0 top-full mt-2 w-32 bg-white rounded-md shadow-lg"
                       onMouseLeave={() => setOpenOptions(null)}
                     >
                       <ul className="p-2 space-y-1">
                         <li
-                          className="cursor-pointer px-3 py-2 hover:bg-gray-100"
+                          className="cursor-pointer px-3 py-2 hover:bg-gray-100 rounded-md"
                           onClick={() => deleteProduct(product.id!)}
                         >
                           Delete
                         </li>
                         <li
-                          className="cursor-pointer px-3 py-2 hover:bg-gray-100"
-                          onClick={() => console.log(product.id)}
+                          className="cursor-pointer px-3 py-2 hover:bg-gray-100 rounded-md"
+                          onClick={() => handleOpenUpdateModal(product.id!)}
                         >
                           Edit
-                        </li>
-                        <li
-                          className="cursor-pointer px-3 py-2 hover:bg-gray-100"
-                          onClick={() => console.log("View clicked")}
-                        >
-                          View
                         </li>
                       </ul>
                     </div>
@@ -197,7 +268,7 @@ const Home = () => {
                 <p className="font-semibold">Brand: {product.brand}</p>
                 <p className="font-semibold">Category: {product.category}</p>
 
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-6">
                   <p className="font-semibold">Price: $ {product.price}</p>
                   <p className="font-semibold text-sm">Quantity avalaible: {product.quantity}</p>
                 </div>
@@ -208,9 +279,10 @@ const Home = () => {
         ))}
       </ul>
 
-      {openModal &&
+      {
+        openModal &&
         <Modal isModalOpen={openModal} closeModal={() => setOpenModal(false)}>
-          <h2 className="text-center text-2xl font-bold mb-4">Add product</h2>
+          <h2 className="text-center text-2xl font-bold mb-4">{updating ? "Update product" : "Add product"}</h2>
           <form className="flex flex-col gap-4">
             <div className="flex flex-col">
               <label className="text-sm font-normal">Name</label>
@@ -266,15 +338,26 @@ const Home = () => {
               <button className="cursor-pointer bg-[#808080] hover:bg-[black] text-white w-30 h-10 px-4 rounded-md"
                 type="button" onClick={() => setOpenModal(false)}>cancel</button>
               <button className="cursor-pointer bg-black hover:bg-[#808080] text-white w-30 h-10 px-4 rounded-md"
-                type="button" onClick={addProduct}>add product</button>
+                type="button" onClick={updating ? editProduct : addProduct}>{updating ? "update" : "save"}</button>
             </div>
           </form>
-        </Modal>}
-
-      {showAlert && <Alert Close={() => setShowAlert(false)} title={title} type={type!}
-        text={text} />
+        </Modal>
       }
-    </div>
+
+      <button
+        type="button"
+        onClick={fetchProducts}
+        disabled={isLoading}
+        className="p-2 cursor-pointer rounded-full hover:bg-gray-300 transition duration-200"
+      >
+        <IoReload fontSize={24} color="#808080" className={`${isLoading ? "animate-spin" : ""}`} />
+      </button>
+
+      {
+        showAlert && <Alert Close={() => setShowAlert(false)} title={title} type={type!}
+          text={text} />
+      }
+    </div >
   );
 }
 
