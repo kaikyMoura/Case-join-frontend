@@ -211,53 +211,53 @@ const Home = () => {
 
       <ul className="flex flex-wrap justify-center gap-6">
         {products && products.map((product) => (
-          <li key={product.id}>
-            <Card className={styles.card}>
-              <div className="flex flex-col gap-6">
-                <div className="relative self-end">
-                  <IoMdMore
-                    className="cursor-pointer"
-                    fontSize={26}
-                    color="#808080"
-                    data-tooltip-id="my-tooltip" data-tooltip-content="Show more options"
-                    onClick={() => setOpenOptions(product.id!)}
-                  />
+          <li key={product.id} className="transition-transform transform hover:scale-105">
+            <Card className={`${styles.card} rounded-lg p-4`}>
+              <div className="relative">
+                <IoMdMore
+                  className="absolute top-2 right-2 cursor-pointer text-gray-500 hover:text-gray-800 transition duration-200 outline-none"
+                  fontSize={26}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Show more options"
+                  onClick={() => setOpenOptions(product.id!)}
+                />
 
-                  {openOptions === product.id && (
-                    <div
-                      className="absolute left-0 top-full mt-2 w-32 bg-white rounded-md shadow-lg"
-                      onMouseLeave={() => setOpenOptions(null)}
-                    >
-                      <ul className="p-2 space-y-1">
-                        <li
-                          className="cursor-pointer px-3 py-2 hover:bg-gray-100 rounded-md"
-                          onClick={() => deleteProduct(product.id!)}
-                        >
-                          Delete
-                        </li>
-                        <li
-                          className="cursor-pointer px-3 py-2 hover:bg-gray-100 rounded-md"
-                          onClick={() => handleOpenUpdateModal(product.id!)}
-                        >
-                          Edit
-                        </li>
-                      </ul>
-                    </div>
-                  )}
+                {openOptions === product.id && (
+                  <div
+                    className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg"
+                    onMouseLeave={() => setOpenOptions(null)}
+                  >
+                    <ul className="p-2 space-y-1">
+                      <li
+                        className="cursor-pointer px-3 py-2 hover:bg-gray-200 rounded-md transition duration-150"
+                        onClick={() => deleteProduct(product.id!)}
+                      >
+                        Delete
+                      </li>
+                      <li
+                        className="cursor-pointer px-3 py-2 hover:bg-gray-200 rounded-md transition duration-150"
+                        onClick={() => handleOpenUpdateModal(product.id!)}
+                      >
+                        Edit
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-4 mt-3">
+                <h3 className="font-bold text-xl text-gray-800">{product.name}</h3>
+                <p className="font-normal text-gray-600 text-sm">{product.description}</p>
+
+                <div className="flex gap-4 justify-between items-center">
+                  <p className="font-semibold text-gray-700">Brand: <span className="text-gray-500">{product.brand}</span></p>
+                  <p className="font-semibold text-gray-700">Category: <span className="text-gray-500">{product.category}</span></p>
                 </div>
 
-                {/* {product.image && <Image src={product.image} alt={product.title} width={400} height={400} />} */}
-
-                <h3 className="font-bold text-lg">{product.name}</h3>
-                <p className="font-normal">{product.description}</p>
-                <p className="font-semibold">Brand: {product.brand}</p>
-                <p className="font-semibold">Category: {product.category}</p>
-
-                <div className="flex justify-between gap-6">
-                  <p className="font-semibold">Price: $ {product.price}</p>
-                  <p className="font-semibold text-sm">Quantity avalaible: {product.quantity}</p>
+                <div className="flex justify-between mt-2 items-center">
+                  <p className="font-semibold text-lg text-black">Price: <span className="text-xl text-green-600">${product.price}</span></p>
+                  <p className="font-semibold text-sm text-gray-500">Available: {product.quantity}</p>
                 </div>
-
               </div>
             </Card>
           </li>
@@ -329,14 +329,16 @@ const Home = () => {
         </Modal>
       }
 
-      <button
-        type="button"
-        onClick={fetchProducts}
-        disabled={isLoading}
-        className="p-2 cursor-pointer rounded-full hover:bg-gray-300 transition duration-200"
-      >
-        <IoReload fontSize={24} color="#808080" className={`${isLoading ? "animate-spin" : ""}`} />
-      </button>
+      {products && (
+        <button
+          type="button"
+          onClick={fetchProducts}
+          disabled={isLoading}
+          className="p-2 cursor-pointer rounded-full hover:bg-gray-300 transition duration-200"
+        >
+          <IoReload fontSize={24} color="#808080" className={`${isLoading ? "animate-spin" : ""}`} />
+        </button>
+      )}
 
       {
         showAlert && <Alert Close={() => setShowAlert(false)} title={title} type={type!}
